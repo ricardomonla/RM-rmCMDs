@@ -4,7 +4,7 @@
 #
 # rmConfiguraRedDebian12.sh - v250924-1036
 #
-# rmCMD=rmConfiguraRedDebian12.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/rmConfiguraRedDebian12/raw/refs/heads/main/${rmCMD})"
+# rmCMD=rmConfiguraRedDebian12.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmConfiguraRedDebian12/${rmCMD})"
 
 rmCMD="rmConfiguraRedDebian12.sh"
 
