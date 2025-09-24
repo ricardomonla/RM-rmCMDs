@@ -1,4 +1,4 @@
-# 🚀 rmConfiguraRedDebian12.sh
+# 🚀 rmConfiguraRedEnDebian.sh
 
 Script **minimalista e interactivo** para configurar interfaces de red en **Debian 12** utilizando `systemd-networkd` y `systemd-resolved`.  
 Permite cambiar entre **modo DHCP** y **modo estático**, modificar IP, DNS y Gateway, y aplicar los cambios de manera segura.
@@ -22,8 +22,8 @@ Permite cambiar entre **modo DHCP** y **modo estático**, modificar IP, DNS y Ga
 Para descargar y ejecutar el script directamente:
 
 ```bash
-rmCMD=rmConfiguraRedDebian12.sh && \
-bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmConfiguraRedDebian12/${rmCMD})"
+rmCMD=rmConfiguraRedEnDebian.sh && \
+bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmConfiguraRedEnDebian/${rmCMD})"
 ````
 
 ---
@@ -70,7 +70,7 @@ bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/m
 
 ## ✅ Estado
 
-Versión actual: **v250924-1016**
+Versión actual: **v250924-1119**
 Estable y funcional para entornos de administración básica de red en servidores Debian 12.
 
 ---

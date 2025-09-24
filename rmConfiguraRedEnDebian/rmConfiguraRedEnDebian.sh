@@ -2,11 +2,11 @@
 
 # LIc. Ricardo MONLA (https://github.com/ricardomonla)
 #
-# rmConfiguraRedDebian12.sh - v250924-1036
+# rmConfiguraRedEnDebian.sh - v250924-1119
 #
-# rmCMD=rmConfiguraRedDebian12.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmConfiguraRedDebian12/${rmCMD})"
+# rmCMD=rmConfiguraRedEnDebian.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmConfiguraRedEnDebian/${rmCMD})"
 
-rmCMD="rmConfiguraRedDebian12.sh"
+rmCMD="rmConfiguraRedEnDebian.sh"
 
 cat << 'SHELL' > "${rmCMD}"
 #!/usr/bin/env bash
@@ -17,7 +17,7 @@ cat << 'SHELL' > "${rmCMD}"
 
 # --- Variables de Identificación ---
 SCRIPT_NAME=$(basename "$0")
-SCRIPT_VERSION="v250924-1016"
+SCRIPT_VERSION="v250924-1119"
 
 # --- Colores ---
 RED="\e[31m"
