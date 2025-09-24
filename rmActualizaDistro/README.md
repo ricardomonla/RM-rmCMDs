@@ -21,7 +21,7 @@ Para descargar y ejecutar el script directamente:
 
 ```bash
 rmCMD=rmActualizaDistro.sh && \
-bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/rmActualizaDistro/raw/refs/heads/main/${rmCMD})"
+bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmActualizaDistro/${rmCMD})"
 ````
 
 ---
@@ -58,5 +58,5 @@ bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/rmActualizaDistr
 
 ## ✅ Estado
 
-Versión actual: **v250924-1204**
+Versión actual: **v250924-1207**
 Estable y funcional para entornos de administración básica de servidores Debian 12.
