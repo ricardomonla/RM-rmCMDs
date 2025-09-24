@@ -2,11 +2,11 @@
 
 # Lic. Ricardo MONLA (https://github.com/ricardomonla)
 #
-# rmCambiaNombreHost_v2.sh - v250924-1107
+# rmCambiaNombreHost.sh - v250924-1107
 #
-# rmCMD=rmCambiaNombreHost_v2.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmCambiaNombreHost/${rmCMD})"
+# rmCMD=rmCambiaNombreHost.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmCambiaNombreHost/${rmCMD})"
 
-rmCMD="rmCambiaNombreHost_v2.sh"
+rmCMD="rmCambiaNombreHost.sh"
 
 cat << 'SHELL' > "${rmCMD}"
 #!/usr/bin/env bash
