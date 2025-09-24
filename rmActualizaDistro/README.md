@@ -58,5 +58,5 @@ bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/m
 
 ## ✅ Estado
 
-Versión actual: **v250924-1248**
+Versión actual: **v250924-1631**
 Estable y funcional para entornos de administración básica de servidores Debian 12.
