@@ -2,11 +2,11 @@
 
 # Lic. Ricardo MONLA (https://github.com/ricardomonla)
 #
-# rmActualizaDistro: v250924-1201
+# rmActualizaDistro: v250924-1204
 #
-# rmCMD=rmActualizaDistro_v1.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmActualizaDistro/${rmCMD})"
+# rmCMD=rmActualizaDistro.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmActualizaDistro/${rmCMD})"
 
-rmCMD="rmActualizaDistro_v1.sh"
+rmCMD="rmActualizaDistro.sh"
 
 cat << 'SHELL' > "${rmCMD}"
 #!/usr/bin/env bash
@@ -17,7 +17,7 @@ cat << 'SHELL' > "${rmCMD}"
 
 # --- Variables de Identificación ---
 SCRIPT_NAME=$(basename "$0")
-SCRIPT_VERSION="v250924-1201"
+SCRIPT_VERSION="v250924-1204"
 
 # --- Colores ---
 RED="\e[31m"

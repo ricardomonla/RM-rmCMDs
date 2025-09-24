@@ -58,5 +58,5 @@ bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/rmActualizaDistr
 
 ## ✅ Estado
 
-Versión actual: **v250924-1201**
+Versión actual: **v250924-1204**
 Estable y funcional para entornos de administración básica de servidores Debian 12.
