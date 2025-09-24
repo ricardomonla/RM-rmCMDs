@@ -2,26 +2,29 @@
 
 # LIc. Ricardo MONLA (https://github.com/ricardomonla)
 #
-# rmConfRedDebian_v12.sh - v250923-1824
+# rmConfiguraRedDebian12.sh - v250924-1036
 #
-# rmCMD=rmConfRedDebian_v12.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/${rmCMD})"
+# rmCMD=rmConfiguraRedDebian12.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/rmConfiguraRedDebian12/raw/refs/heads/main/${rmCMD})"
 
-rmCMD="rmConfRedDebian_v12.sh"
+rmCMD="rmConfiguraRedDebian12.sh"
 
 cat << 'SHELL' > "${rmCMD}"
 #!/usr/bin/env bash
 # ==============================================================
-# Script: rmConfRedDebian_v12.sh
+# Script de Configuración minimalista de red en Debian 12
 # Autor: Lic. Ricardo MONLA (https://github.com/ricardomonla)
-# Versión: v250924-0020
-# Objetivo: Configuración minimalista de red en Debian 12
 # ==============================================================
+
+# --- Variables de Identificación ---
+SCRIPT_NAME=$(basename "$0")
+SCRIPT_VERSION="v250924-1016"
 
 # --- Colores ---
 RED="\e[31m"
 GREEN="\e[32m"
 YELLOW="\e[33m"
 BLUE="\e[34m"
+MAGENTA="\e[35m"
 CYAN="\e[36m"
 BOLD="\e[1m"
 RESET="\e[0m"
@@ -43,9 +46,9 @@ DEF_DNS3="9.9.9.9"
 banner() {
   clear
   echo -e "${BOLD}${CYAN}==============================================================${RESET}"
-  echo -e "${BOLD}${GREEN} Script: rmConfRedDebian${RESET}"
+  echo -e "${BOLD}${GREEN} Script: $SCRIPT_NAME${RESET}"
   echo -e "${BOLD}${GREEN} Autor : Lic. Ricardo MONLA (https://github.com/ricardomonla)${RESET}"
-  echo -e "${BOLD}${GREEN} Vers. : v250924-0020${RESET}"
+  echo -e "${BOLD}${GREEN} Vers. : $SCRIPT_VERSION${RESET}"
   echo -e "${BOLD}${CYAN}==============================================================${RESET}"
 }
 
@@ -67,10 +70,32 @@ estado_iface() {
     fi
   fi
 
-  # IP actual si la tiene
   ip_actual=$(ip -o -4 addr show dev "$iface" | awk '{print $4}' | head -n1)
 
   echo "$mode;$ip;$gw;$dnsline;$ip_actual"
+}
+
+# --- Mostrar comparativa ---
+mostrar_diff_config() {
+  local cur_mode=$1 cur_ip=$2 cur_dns=$3
+  local new_mode=$4 new_ip=$5 new_dns=$6
+
+  echo -e "${BOLD}${BLUE}📊 Cambios detectados:${RESET}"
+  if [ "$cur_mode" != "$new_mode" ]; then
+    echo -e "  Modo: ${GREEN}${cur_mode}${RESET} -> ${MAGENTA}${new_mode}${RESET}"
+  else
+    echo -e "  Modo: ${GREEN}${cur_mode}${RESET}"
+  fi
+  if [ "$cur_ip" != "$new_ip" ]; then
+    echo -e "  IP:   ${GREEN}${cur_ip:-N/A}${RESET} -> ${MAGENTA}${new_ip:-N/A}${RESET}"
+  else
+    echo -e "  IP:   ${GREEN}${cur_ip:-N/A}${RESET}"
+  fi
+  if [ "$cur_dns" != "$new_dns" ]; then
+    echo -e "  DNS:  ${GREEN}${cur_dns:-N/A}${RESET} -> ${MAGENTA}${new_dns:-N/A}${RESET}"
+  else
+    echo -e "  DNS:  ${GREEN}${cur_dns:-N/A}${RESET}"
+  fi
 }
 
 # --- Guardar configuración ---
@@ -112,51 +137,58 @@ EOF
 # --- Submenú de configuración ---
 submenu_config() {
   local IFACE=$1
-  local mode ip gw dnsline ip_actual
-  IFS=";" read mode ip gw dnsline ip_actual <<< "$(estado_iface "$IFACE")"
+  local cur_mode cur_ip cur_gw cur_dns cur_ip_actual
+  IFS=";" read cur_mode cur_ip cur_gw cur_dns cur_ip_actual <<< "$(estado_iface "$IFACE")"
 
-  ip=${ip:-$DEF_IP}
-  gw=${gw:-$DEF_GW}
-  dnsline=${dnsline:-"$DEF_DNS1,$DEF_DNS2,$DEF_DNS3"}
+  # Valores editables
+  local new_mode=$cur_mode
+  local new_ip=${cur_ip:-$DEF_IP}
+  local new_dns=${cur_dns:-"$DEF_DNS1,$DEF_DNS2,$DEF_DNS3"}
 
   while true; do
     banner
-    IFS=";" read mode ip gw dnsline ip_actual <<< "$(estado_iface "$IFACE")"
-    if [ "$mode" = "DHCP" ]; then
-      echo -e "${BOLD}${BLUE}⚙ Configuración para $IFACE:${RESET}"
-      echo "  1) Modo   [DHCP]"
-      echo "  2) IP actual asignada: ${ip_actual:-N/A}"
-      echo "  3) Cambiar a STATIC"
-      echo "  4) Aplicar configuración"
-      echo "  5) Regresar"
-      read -p "Seleccione opción [5]: " OPC
-      OPC=${OPC:-5}
-      case $OPC in
-        3) mode="STATIC" ;;
-        4) guardar_config "$IFACE" "$mode" "$ip" "$dnsline" ;;
-        5) return ;;
-        *) echo -e "${RED}❌ Opción inválida.${RESET}" ;;
-      esac
-    else
-      echo -e "${BOLD}${BLUE}⚙ Configuración para $IFACE:${RESET}"
-      echo "  1) Modo   [STATIC]"
-      echo "  2) IP     [$ip]"
-      echo "  3) DNS    [$dnsline]"
-      echo "  4) Cambiar a DHCP"
-      echo "  5) Aplicar configuración"
-      echo "  6) Regresar"
-      read -p "Seleccione opción [6]: " OPC
-      OPC=${OPC:-6}
-      case $OPC in
-        1) ;; # solo informativo
-        2) read -p "Dirección IP [$ip]: " val; ip=${val:-$ip} ;;
-        3) read -p "DNS separados por coma [$dnsline]: " val; dnsline=${val:-$dnsline} ;;
-        4) mode="DHCP" ;;
-        5) guardar_config "$IFACE" "$mode" "$ip" "$dnsline" ;;
-        6) return ;;
-        *) echo -e "${RED}❌ Opción inválida.${RESET}" ;;
-      esac
+    echo -e "${BOLD}${BLUE}⚙ Configuración para $IFACE:${RESET}"
+    echo "  1) Modo [$new_mode]"
+    if [ "$new_mode" = "STATIC" ]; then
+      echo "  2) Dirección IP [$new_ip]"
+      echo "  3) DNS [$new_dns]"
     fi
+
+    local CHANGES=0
+    [[ "$cur_mode" != "$new_mode" || "$cur_ip" != "$new_ip" || "$cur_dns" != "$new_dns" ]] && CHANGES=1
+
+    if [ $CHANGES -eq 1 ]; then
+      echo "  9) Aplicar configuración"
+      mostrar_diff_config "$cur_mode" "$cur_ip" "$cur_dns" "$new_mode" "$new_ip" "$new_dns"
+    fi
+    echo "  0) Regresar"
+
+    read -p "Seleccione opción [0]: " OPC
+    OPC=${OPC:-0}
+
+    case $OPC in
+      1) 
+        if [ "$new_mode" = "DHCP" ]; then new_mode="STATIC"; else new_mode="DHCP"; fi
+        ;;
+      2) 
+        if [ "$new_mode" = "STATIC" ]; then
+          read -p "Dirección IP [$new_ip]: " val; new_ip=${val:-$new_ip}
+        fi
+        ;;
+      3) 
+        if [ "$new_mode" = "STATIC" ]; then
+          read -p "DNS separados por coma [$new_dns]: " val; new_dns=${val:-$new_dns}
+        fi
+        ;;
+      9) 
+        if [ $CHANGES -eq 1 ]; then
+          guardar_config "$IFACE" "$new_mode" "$new_ip" "$new_dns"
+          return
+        fi
+        ;;
+      0) return ;;
+      *) echo -e "${RED}❌ Opción inválida.${RESET}" ;;
+    esac
     read -p "Presione Enter para continuar..." _
   done
 }
@@ -177,7 +209,6 @@ while true; do
     ((i++))
   done
 
-  # Gateway global
   GW_ACTUAL=$(ip route show default | awk '/default/ {print $3; exit}')
   echo "  $i) Gateway [${GW_ACTUAL:-$DEF_GW}]"
   ((i++))
