@@ -2,7 +2,7 @@
 
 # LIc. Ricardo MONLA (https://github.com/ricardomonla)
 #
-# rmConfiguraRedEnDebian.sh - v250924-1119
+# rmConfiguraRedEnDebian: v250924-1637
 #
 # rmCMD=rmConfiguraRedEnDebian.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmConfiguraRedEnDebian/${rmCMD})"
 
@@ -17,7 +17,7 @@ cat << 'SHELL' > "${rmCMD}"
 
 # --- Variables de Identificación ---
 SCRIPT_NAME=$(basename "$0")
-SCRIPT_VERSION="v250924-1119"
+SCRIPT_VERSION="v250924-1637"
 
 # --- Colores ---
 RED="\e[31m"
@@ -214,7 +214,7 @@ while true; do
   ((i++))
   echo "  $i) Salir"
 
-  read -p "Seleccione la opción [1]: " SEL
+  read -p "Seleccione la opción [$i]: " SEL
   SEL=${SEL:-1}
 
   if [ "$SEL" -eq "$i" ]; then
