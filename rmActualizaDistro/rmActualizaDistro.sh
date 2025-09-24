@@ -1,8 +1,6 @@
-#!/bin/bash
-
 # Lic. Ricardo MONLA (https://github.com/ricardomonla)
 #
-# rmActualizaDistro: v250924-1207
+# rmActualizaDistro: v250924-1248
 #
 # rmCMD=rmActualizaDistro.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmActualizaDistro/${rmCMD})"
 
@@ -17,7 +15,7 @@ cat << 'SHELL' > "${rmCMD}"
 
 # --- Variables de Identificación ---
 SCRIPT_NAME=$(basename "$0")
-SCRIPT_VERSION="v250924-1207"
+SCRIPT_VERSION="v250924-1248"
 
 # --- Colores ---
 RED="\e[31m"
@@ -70,6 +68,14 @@ clean_system() {
   echo -e "${GREEN}✅ Limpieza completada.${RESET}"
 }
 
+# --- Actualizar y Limpiar ---
+update_clean() {
+  echo -e "${BLUE}📦🧹 Actualizar y Limpiar...${RESET}"
+  update_system 
+  clean_system
+  echo -e "${GREEN}✅ Tareas terminadas.${RESET}"
+}
+
 # --- Reiniciar ---
 reboot_system() {
   echo -e "${MAGENTA}♻️  Reiniciando el sistema...${RESET}"
@@ -83,7 +89,8 @@ while true; do
   echo -e "${BOLD}${YELLOW}Seleccione una acción:${RESET}"
   echo "  1) Actualizar repositorios y aplicativos"
   echo "  2) Limpieza de paquetes y caché"
-  echo "  3) Reiniciar el sistema"
+  echo "  3) Actualizar y Limpiar"
+  echo "  4) Reiniciar el sistema"
   echo "  0) Salir"
   echo
   check_reboot
@@ -94,7 +101,8 @@ while true; do
   case $OPC in
     1) update_system ;;
     2) clean_system ;;
-    3) reboot_system ;;
+    3) update_clean ;;
+    4) reboot_system ;;
     0) echo -e "${CYAN}👋 Saliendo...${RESET}"; break ;;
     *) echo -e "${RED}❌ Opción inválida.${RESET}" ;;
   esac
