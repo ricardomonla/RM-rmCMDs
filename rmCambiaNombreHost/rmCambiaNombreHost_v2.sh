@@ -2,7 +2,7 @@
 
 # Lic. Ricardo MONLA (https://github.com/ricardomonla)
 #
-# rmCambiaNombreHost_v1.sh - v250924-1020
+# rmCambiaNombreHost_v1.sh - v250924-1107
 #
 # rmCMD=rmCambiaNombreHost_v1.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmCambiaNombreHost/${rmCMD})"
 
@@ -17,7 +17,7 @@ cat << 'SHELL' > "${rmCMD}"
 
 # --- Variables de Identificación ---
 SCRIPT_NAME=$(basename "$0")
-SCRIPT_VERSION="v250924-1020"
+SCRIPT_VERSION="v250924-1107"
 
 # --- Colores ---
 RED="\e[31m"
