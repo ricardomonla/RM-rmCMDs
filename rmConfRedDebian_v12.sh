@@ -1,0 +1,216 @@
+#!/bin/bash
+
+# LIc. Ricardo MONLA (https://github.com/ricardomonla)
+#
+# rmConfRedDebian_v12.sh - v250923-1824
+#
+# rmCMD=rmConfRedDebian_v12.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/${rmCMD})"
+
+rmCMD="rmConfRedDebian_v12.sh"
+
+cat << 'SHELL' > "${rmCMD}"
+#!/usr/bin/env bash
+# ==============================================================
+# Script: rmConfRedDebian_v12.sh
+# Autor: Lic. Ricardo MONLA (https://github.com/ricardomonla)
+# Versión: v250924-0020
+# Objetivo: Configuración minimalista de red en Debian 12
+# ==============================================================
+
+# --- Colores ---
+RED="\e[31m"
+GREEN="\e[32m"
+YELLOW="\e[33m"
+BLUE="\e[34m"
+CYAN="\e[36m"
+BOLD="\e[1m"
+RESET="\e[0m"
+
+# --- Asegurar ejecución como root ---
+if [ "$EUID" -ne 0 ]; then
+  echo -e "${RED}🔒 Reejecutando con sudo...${RESET}"
+  exec sudo bash "$0" "$@"
+fi
+
+# --- Valores predeterminados ---
+DEF_IP="10.0.10.3/24"
+DEF_GW="10.0.10.1"
+DEF_DNS1="8.8.8.8"
+DEF_DNS2="1.1.1.1"
+DEF_DNS3="9.9.9.9"
+
+# --- Banner ---
+banner() {
+  clear
+  echo -e "${BOLD}${CYAN}==============================================================${RESET}"
+  echo -e "${BOLD}${GREEN} Script: rmConfRedDebian${RESET}"
+  echo -e "${BOLD}${GREEN} Autor : Lic. Ricardo MONLA (https://github.com/ricardomonla)${RESET}"
+  echo -e "${BOLD}${GREEN} Vers. : v250924-0020${RESET}"
+  echo -e "${BOLD}${CYAN}==============================================================${RESET}"
+}
+
+# --- Obtener estado de una interfaz ---
+estado_iface() {
+  local iface=$1
+  local netfile="/etc/systemd/network/10-$iface.network"
+  local mode="DHCP"
+  local ip gw dnsline
+
+  if [ -f "$netfile" ]; then
+    if grep -q "DHCP=yes" "$netfile"; then
+      mode="DHCP"
+    else
+      mode="STATIC"
+      ip=$(grep -m1 "^Address=" "$netfile" | cut -d= -f2)
+      gw=$(grep -m1 "^Gateway=" "$netfile" | cut -d= -f2)
+      dnsline=$(grep "^DNS=" "$netfile" | cut -d= -f2 | tr '\n' ',' | sed 's/,$//')
+    fi
+  fi
+
+  # IP actual si la tiene
+  ip_actual=$(ip -o -4 addr show dev "$iface" | awk '{print $4}' | head -n1)
+
+  echo "$mode;$ip;$gw;$dnsline;$ip_actual"
+}
+
+# --- Guardar configuración ---
+guardar_config() {
+  local iface=$1
+  local mode=$2
+  local ip=$3
+  local dnsline=$4
+  local NET_CONF="/etc/systemd/network/10-$iface.network"
+
+  if [ "$mode" = "DHCP" ]; then
+    cat > "$NET_CONF" <<EOF
+[Match]
+Name=$iface
+
+[Network]
+DHCP=yes
+EOF
+  else
+    cat > "$NET_CONF" <<EOF
+[Match]
+Name=$iface
+
+[Network]
+Address=$ip
+EOF
+    for d in $(echo "$dnsline" | tr ',' ' '); do
+      [ -n "$d" ] && echo "DNS=$d" >> "$NET_CONF"
+    done
+  fi
+
+  systemctl enable systemd-networkd --now
+  systemctl restart systemd-networkd
+  systemctl restart systemd-resolved
+  sleep 2
+  echo -e "${GREEN}✅ Configuración aplicada en $iface${RESET}"
+}
+
+# --- Submenú de configuración ---
+submenu_config() {
+  local IFACE=$1
+  local mode ip gw dnsline ip_actual
+  IFS=";" read mode ip gw dnsline ip_actual <<< "$(estado_iface "$IFACE")"
+
+  ip=${ip:-$DEF_IP}
+  gw=${gw:-$DEF_GW}
+  dnsline=${dnsline:-"$DEF_DNS1,$DEF_DNS2,$DEF_DNS3"}
+
+  while true; do
+    banner
+    IFS=";" read mode ip gw dnsline ip_actual <<< "$(estado_iface "$IFACE")"
+    if [ "$mode" = "DHCP" ]; then
+      echo -e "${BOLD}${BLUE}⚙ Configuración para $IFACE:${RESET}"
+      echo "  1) Modo   [DHCP]"
+      echo "  2) IP actual asignada: ${ip_actual:-N/A}"
+      echo "  3) Cambiar a STATIC"
+      echo "  4) Aplicar configuración"
+      echo "  5) Regresar"
+      read -p "Seleccione opción [5]: " OPC
+      OPC=${OPC:-5}
+      case $OPC in
+        3) mode="STATIC" ;;
+        4) guardar_config "$IFACE" "$mode" "$ip" "$dnsline" ;;
+        5) return ;;
+        *) echo -e "${RED}❌ Opción inválida.${RESET}" ;;
+      esac
+    else
+      echo -e "${BOLD}${BLUE}⚙ Configuración para $IFACE:${RESET}"
+      echo "  1) Modo   [STATIC]"
+      echo "  2) IP     [$ip]"
+      echo "  3) DNS    [$dnsline]"
+      echo "  4) Cambiar a DHCP"
+      echo "  5) Aplicar configuración"
+      echo "  6) Regresar"
+      read -p "Seleccione opción [6]: " OPC
+      OPC=${OPC:-6}
+      case $OPC in
+        1) ;; # solo informativo
+        2) read -p "Dirección IP [$ip]: " val; ip=${val:-$ip} ;;
+        3) read -p "DNS separados por coma [$dnsline]: " val; dnsline=${val:-$dnsline} ;;
+        4) mode="DHCP" ;;
+        5) guardar_config "$IFACE" "$mode" "$ip" "$dnsline" ;;
+        6) return ;;
+        *) echo -e "${RED}❌ Opción inválida.${RESET}" ;;
+      esac
+    fi
+    read -p "Presione Enter para continuar..." _
+  done
+}
+
+# --- Menú principal ---
+while true; do
+  banner
+  IFACES=($(ip -o link show | awk -F': ' '{print $2}' | grep -E '^(en|eth)'))
+  echo -e "${BOLD}${YELLOW}Interfaces detectadas:${RESET}"
+  i=1
+  for nic in "${IFACES[@]}"; do
+    IFS=";" read mode ip gw dnsline ip_actual <<< "$(estado_iface "$nic")"
+    if [ "$mode" = "STATIC" ]; then
+      echo "  $i) $nic [$mode] --> IP: ${ip:-N/A}; DNS: ${dnsline:-N/A}"
+    else
+      echo "  $i) $nic [$mode] --> IP: ${ip_actual:-N/A}"
+    fi
+    ((i++))
+  done
+
+  # Gateway global
+  GW_ACTUAL=$(ip route show default | awk '/default/ {print $3; exit}')
+  echo "  $i) Gateway [${GW_ACTUAL:-$DEF_GW}]"
+  ((i++))
+  echo "  $i) Salir"
+
+  read -p "Seleccione la opción [1]: " SEL
+  SEL=${SEL:-1}
+
+  if [ "$SEL" -eq "$i" ]; then
+    echo -e "${CYAN}👋 Saliendo...${RESET}"
+    break
+  elif [ "$SEL" -eq $((i-1)) ]; then
+    read -p "Nuevo Gateway [${GW_ACTUAL:-$DEF_GW}]: " NEWGW
+    NEWGW=${NEWGW:-$GW_ACTUAL}
+    ip route replace default via "$NEWGW"
+    echo -e "${GREEN}✅ Gateway actualizado a $NEWGW${RESET}"
+    read -p "Presione Enter para continuar..." _
+    continue
+  fi
+
+  IFACE="${IFACES[$((SEL-1))]}"
+  [ -n "$IFACE" ] && submenu_config "$IFACE" || echo -e "${RED}❌ Opción inválida.${RESET}"
+done
+
+echo -e "${GREEN}✅ Configuración finalizada.${RESET}"
+
+SHELL
+
+# Dar permisos de ejecución al script
+chmod +x "${rmCMD}"
+
+# Ejecutar el script
+./"${rmCMD}"
+
+
+
