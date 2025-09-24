@@ -2,7 +2,7 @@
 
 # LIc. Ricardo MONLA (https://github.com/ricardomonla)
 #
-# rmConfiguraRedEnDebian: v250924-1637
+# rmConfiguraRedEnDebian: v250924-2000
 #
 # rmCMD=rmConfiguraRedEnDebian.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmConfiguraRedEnDebian/${rmCMD})"
 
@@ -13,11 +13,12 @@ cat << 'SHELL' > "${rmCMD}"
 # ==============================================================
 # Script de Configuración minimalista de red en Debian 12
 # Autor: Lic. Ricardo MONLA (https://github.com/ricardomonla)
+# Versión: v250924-2300
 # ==============================================================
 
 # --- Variables de Identificación ---
 SCRIPT_NAME=$(basename "$0")
-SCRIPT_VERSION="v250924-1637"
+SCRIPT_VERSION="v250924-2000"
 
 # --- Colores ---
 RED="\e[31m"
@@ -31,7 +32,7 @@ RESET="\e[0m"
 
 # --- Asegurar ejecución como root ---
 if [ "$EUID" -ne 0 ]; then
-  echo -e "${RED}🔒 Reejecutando con sudo...${RESET}"
+  echo -e "${GREEN}🔒 Reejecutando con sudo...${RESET}"
   exec sudo bash "$0" "$@"
 fi
 
@@ -77,8 +78,8 @@ estado_iface() {
 
 # --- Mostrar comparativa ---
 mostrar_diff_config() {
-  local cur_mode=$1 cur_ip=$2 cur_dns=$3
-  local new_mode=$4 new_ip=$5 new_dns=$6
+  local cur_mode=$1 cur_ip=$2 cur_gw=$3 cur_dns=$4
+  local new_mode=$5 new_ip=$6 new_gw=$7 new_dns=$8
 
   echo -e "${BOLD}${BLUE}📊 Cambios detectados:${RESET}"
   if [ "$cur_mode" != "$new_mode" ]; then
@@ -90,6 +91,11 @@ mostrar_diff_config() {
     echo -e "  IP:   ${GREEN}${cur_ip:-N/A}${RESET} -> ${MAGENTA}${new_ip:-N/A}${RESET}"
   else
     echo -e "  IP:   ${GREEN}${cur_ip:-N/A}${RESET}"
+  fi
+  if [ "$cur_gw" != "$new_gw" ]; then
+    echo -e "  GW:   ${GREEN}${cur_gw:-N/A}${RESET} -> ${MAGENTA}${new_gw:-N/A}${RESET}"
+  else
+    echo -e "  GW:   ${GREEN}${cur_gw:-N/A}${RESET}"
   fi
   if [ "$cur_dns" != "$new_dns" ]; then
     echo -e "  DNS:  ${GREEN}${cur_dns:-N/A}${RESET} -> ${MAGENTA}${new_dns:-N/A}${RESET}"
@@ -103,7 +109,8 @@ guardar_config() {
   local iface=$1
   local mode=$2
   local ip=$3
-  local dnsline=$4
+  local gw=$4
+  local dnsline=$5
   local NET_CONF="/etc/systemd/network/10-$iface.network"
 
   if [ "$mode" = "DHCP" ]; then
@@ -121,6 +128,7 @@ Name=$iface
 
 [Network]
 Address=$ip
+Gateway=$gw
 EOF
     for d in $(echo "$dnsline" | tr ',' ' '); do
       [ -n "$d" ] && echo "DNS=$d" >> "$NET_CONF"
@@ -143,6 +151,7 @@ submenu_config() {
   # Valores editables
   local new_mode=$cur_mode
   local new_ip=${cur_ip:-$DEF_IP}
+  local new_gw=${cur_gw:-$DEF_GW}
   local new_dns=${cur_dns:-"$DEF_DNS1,$DEF_DNS2,$DEF_DNS3"}
 
   while true; do
@@ -151,15 +160,16 @@ submenu_config() {
     echo "  1) Modo [$new_mode]"
     if [ "$new_mode" = "STATIC" ]; then
       echo "  2) Dirección IP [$new_ip]"
-      echo "  3) DNS [$new_dns]"
+      echo "  3) Gateway [$new_gw]"
+      echo "  4) DNS [$new_dns]"
     fi
 
     local CHANGES=0
-    [[ "$cur_mode" != "$new_mode" || "$cur_ip" != "$new_ip" || "$cur_dns" != "$new_dns" ]] && CHANGES=1
+    [[ "$cur_mode" != "$new_mode" || "$cur_ip" != "$new_ip" || "$cur_gw" != "$new_gw" || "$cur_dns" != "$new_dns" ]] && CHANGES=1
 
     if [ $CHANGES -eq 1 ]; then
       echo "  9) Aplicar configuración"
-      mostrar_diff_config "$cur_mode" "$cur_ip" "$cur_dns" "$new_mode" "$new_ip" "$new_dns"
+      mostrar_diff_config "$cur_mode" "$cur_ip" "$cur_gw" "$cur_dns" "$new_mode" "$new_ip" "$new_gw" "$new_dns"
     fi
     echo "  0) Regresar"
 
@@ -175,14 +185,19 @@ submenu_config() {
           read -p "Dirección IP [$new_ip]: " val; new_ip=${val:-$new_ip}
         fi
         ;;
-      3) 
+      3)
+        if [ "$new_mode" = "STATIC" ]; then
+          read -p "Gateway [$new_gw]: " val; new_gw=${val:-$new_gw}
+        fi
+        ;;
+      4) 
         if [ "$new_mode" = "STATIC" ]; then
           read -p "DNS separados por coma [$new_dns]: " val; new_dns=${val:-$new_dns}
         fi
         ;;
       9) 
         if [ $CHANGES -eq 1 ]; then
-          guardar_config "$IFACE" "$new_mode" "$new_ip" "$new_dns"
+          guardar_config "$IFACE" "$new_mode" "$new_ip" "$new_gw" "$new_dns"
           return
         fi
         ;;
@@ -202,31 +217,21 @@ while true; do
   for nic in "${IFACES[@]}"; do
     IFS=";" read mode ip gw dnsline ip_actual <<< "$(estado_iface "$nic")"
     if [ "$mode" = "STATIC" ]; then
-      echo "  $i) $nic [$mode] --> IP: ${ip:-N/A}; DNS: ${dnsline:-N/A}"
+      echo "  $i) $nic [$mode] --> IP: ${ip:-N/A}; GW: ${gw:-N/A}; DNS: ${dnsline:-N/A}"
     else
       echo "  $i) $nic [$mode] --> IP: ${ip_actual:-N/A}"
     fi
     ((i++))
   done
 
-  GW_ACTUAL=$(ip route show default | awk '/default/ {print $3; exit}')
-  echo "  $i) Gateway [${GW_ACTUAL:-$DEF_GW}]"
-  ((i++))
   echo "  $i) Salir"
 
   read -p "Seleccione la opción [$i]: " SEL
-  SEL=${SEL:-1}
+  SEL=${SEL:-$i}
 
   if [ "$SEL" -eq "$i" ]; then
     echo -e "${CYAN}👋 Saliendo...${RESET}"
     break
-  elif [ "$SEL" -eq $((i-1)) ]; then
-    read -p "Nuevo Gateway [${GW_ACTUAL:-$DEF_GW}]: " NEWGW
-    NEWGW=${NEWGW:-$GW_ACTUAL}
-    ip route replace default via "$NEWGW"
-    echo -e "${GREEN}✅ Gateway actualizado a $NEWGW${RESET}"
-    read -p "Presione Enter para continuar..." _
-    continue
   fi
 
   IFACE="${IFACES[$((SEL-1))]}"
@@ -234,6 +239,7 @@ while true; do
 done
 
 echo -e "${GREEN}✅ Configuración finalizada.${RESET}"
+
 
 SHELL
 

@@ -1,25 +1,32 @@
 # 🚀 rmConfiguraRedEnDebian.sh
 
-Script **minimalista e interactivo** para configurar interfaces de red en **Debian 12** utilizando `systemd-networkd` y `systemd-resolved`.  
-Permite cambiar entre **modo DHCP** y **modo estático**, modificar IP, DNS y Gateway, y aplicar los cambios de manera segura.
+Script **minimalista, interactivo y seguro** para configurar interfaces de red en **Debian 12** usando `systemd-networkd` y `systemd-resolved`.  
+Pensado para administradores que necesitan cambiar entre **modo DHCP** y **modo estático** de manera rápida, con control visual y confirmaciones antes de aplicar cambios.
 
 ---
 
 ## 📦 Características principales
 
-- Detección automática de interfaces de red (`en*` o `eth*`).
-- Cambio de configuración de **DHCP ↔ STATIC** de manera simple.
-- Edición de **Dirección IP** y **Servidores DNS** cuando la interfaz está en modo estático.
-- Modificación del **Gateway por defecto**.
-- Vista comparativa de la configuración actual vs. la nueva (colores verde/magenta).
-- La opción **"Aplicar configuración"** solo aparece si hubo cambios.
-- Aplica los cambios recargando `systemd-networkd` y `systemd-resolved`.
+- 🔍 **Detección automática** de interfaces de red (`en*`, `eth*`).
+- 🔄 Cambio inmediato entre **DHCP ↔ STATIC**.
+- ✏️ Edición de parámetros en modo estático:
+  - Dirección IP
+  - Servidores DNS
+  - Gateway por defecto
+- 🎨 **Colores en consola** para distinguir:
+  - Configuración actual (magenta)
+  - Nueva configuración (verde)
+- ✅ La opción **"Aplicar configuración"** solo aparece si hubo cambios.
+- ⚡ Aplica cambios de manera segura:
+  - Recarga `systemd-networkd`
+  - Recarga `systemd-resolved`
+- 🧹 Verificación y confirmación antes de sobrescribir archivos de red.
 
 ---
 
 ## ▶️ Ejecución rápida
 
-Para descargar y ejecutar el script directamente:
+Descarga y ejecuta el script directamente con:
 
 ```bash
 rmCMD=rmConfiguraRedEnDebian.sh && \
@@ -30,34 +37,68 @@ bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/m
 
 ## 📋 Requisitos
 
-* Debian 12 (u otra distribución basada en `systemd-networkd`).
-* Acceso a usuario con privilegios de `root` o `sudo`.
-* Conexión a internet para la descarga inicial.
+* Debian 12 (o cualquier distro basada en `systemd-networkd`).
+* Usuario con permisos de `root` o `sudo`.
+* Conexión a internet para la primera descarga.
 
 ---
 
 ## ⚙️ Funcionamiento básico
 
-1. El script detecta las interfaces de red disponibles.
-2. Muestra un **menú interactivo** para:
+1. El script detecta automáticamente las interfaces de red.
+2. Muestra un **menú interactivo** con opciones:
 
    * Seleccionar interfaz.
-   * Cambiar modo DHCP/STATIC.
-   * Editar parámetros en STATIC.
-   * Ver comparativa de cambios.
+   * Cambiar **DHCP ↔ STATIC**.
+   * Editar parámetros (IP, DNS, Gateway).
+   * Vista comparativa (actual vs nueva).
    * Aplicar configuración.
+   * Salir sin cambios.
 3. Los cambios se guardan en `/etc/systemd/network/10-<iface>.network`.
-4. Se reinician los servicios:
+4. El script recarga los servicios de red:
 
    * `systemd-networkd`
    * `systemd-resolved`
 
 ---
 
-## 📂 Archivos afectados
+## 🖥️ Ejemplo de uso
 
-* `/etc/systemd/network/10-<iface>.network` → Configuración de la interfaz.
-* Tabla de rutas → Actualización de gateway.
+```bash
+sudo ./rmConfiguraRedEnDebian.sh
+```
+
+1. Selecciona la interfaz de red (ej: `ens18`).
+2. Cambia el modo de **DHCP** a **STATIC**.
+3. Ingresa:
+
+   * IP → `192.168.1.50/24`
+   * Gateway → `192.168.1.1`
+   * DNS → `8.8.8.8 1.1.1.1`
+4. Verás una comparativa:
+
+```
+Config. actual   → [DHCP] 192.168.1.120
+Nueva config.    → [STATIC] 192.168.1.50
+```
+
+5. Selecciona **Aplicar configuración** → el script recarga servicios y aplica los cambios.
+
+---
+
+## 📂 Archivos modificados
+
+* `/etc/systemd/network/10-<iface>.network` → configuración principal de la interfaz.
+* Tabla de rutas → actualización de gateway.
+
+---
+
+## 🎨 Estética y usabilidad
+
+* ✅ Verde → configuración nueva.
+* 🟣 Magenta → configuración actual.
+* ⚠️ Amarillo → advertencias / confirmaciones.
+* ❌ Rojo → errores o acciones canceladas.
 
 ---
 
@@ -68,9 +109,9 @@ bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/m
 
 ---
 
-## ✅ Estado
+## 📌 Versionado
 
-Versión actual: **v250924-1637**
-Estable y funcional para entornos de administración básica de red en servidores Debian 12.
+* **v250924-2000** → versión actual, estable y funcional para entornos básicos de red en servidores Debian 12.
 
 ---
+
