@@ -4,7 +4,7 @@
 #
 # rmCambiaNombreHost_v1.sh - v250924-1020
 #
-# rmCMD=rmCambiaNombreHost_v1.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/rmCambiaNombreHost/raw/refs/heads/main/${rmCMD})"
+# rmCMD=rmCambiaNombreHost_v1.sh && bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmCambiaNombreHost/${rmCMD})"
 
 rmCMD="rmCambiaNombreHost_v1.sh"
 

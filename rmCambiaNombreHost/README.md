@@ -24,7 +24,7 @@ Para descargar y ejecutar el script directamente:
 
 ```bash
 rmCMD=rmCambiaNombreHost.sh && \
-bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/rmCambiaNombreHost/raw/refs/heads/main/${rmCMD})"
+bash -c "$(curl -fsSL https://github.com/ricardomonla/RM-rmCMDs/raw/refs/heads/main/rmCambiaNombreHost/${rmCMD})"
 ````
 
 ---
